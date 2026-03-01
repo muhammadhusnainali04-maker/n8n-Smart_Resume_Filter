@@ -2,6 +2,7 @@
 an automation on n8n that filter the cv by viewing requirments
 
 🚀 AnonRecruit: Bias-Free AI Recruitment Pipeline
+
 📌 Project Overview
 AnonRecruit is an end-to-end automation built on n8n that streamlines the hiring process. It solves the problem of "Resume Fatigue" by using AI to instantly score candidates against dynamic job requirements while stripping away personal identifiers to ensure unbiased hiring.
 
