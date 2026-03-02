@@ -1,0 +1,505 @@
+{
+  "name": "Smart Resume Filter",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json[\"CV\"].split('id=')[1] }} ",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -624,
+        176
+      ],
+      "id": "14dc449c-ff35-440a-b29b-017b85623df3",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "nJlrQ0bT4GnZrcg4",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -384,
+        -304
+      ],
+      "id": "3bc394f5-2eff-4acc-960e-98f020d69133",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Job Title: {{ $json['Job Title'] }}\n\nJob Requirements: {{ $json['Key Requirments '] }}\n\nCandidate CV: {{ $('Extract from File').item.json.text }}",
+        "options": {
+          "systemMessage": "You are an Elite, Bias-Free Technical Recruiter.\n\nInstructions:\n1. Analyze Requirements: Read the Job title and Description provided in the Job Requirement field.\n2. Analyze CV: Read the Candidate CV. DO NOT use the candidate's name or gender in your reasoning to ensure a bias-free evaluation.\n3. Compare & Score: Assign a 'Fit Score' from 0-100.\n   - 80-100: Expert match; has almost all Must-Have skills.\n   - 50-79: Potential match; has core skills but lacks specific experience.\n   - Below 50: Poor match.\n4. Reasoning: Provide a one-sentence Match Rationale explaining the score.\n5. Identify Gaps: List any critical skills from the JD that are missing in the CV.\n\nOutput Format: You MUST return a valid JSON object with these keys: anonymized_id, score, rationale, skills_found, and missing_gaps."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        48,
+        -80
+      ],
+      "id": "bde97dd6-23bf-4ac5-9854-f9ed747d975c",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        128,
+        144
+      ],
+      "id": "240d9975-1a77-4ae2-990b-80cae469617d",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ZY7YEFvsxZ4wWL8m",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1u69YDgSunLNDJ6N6epDtftXN1FvZ3JJ38Fn5pIsUNS0",
+          "mode": "list",
+          "cachedResultName": "Hackaton CV",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1u69YDgSunLNDJ6N6epDtftXN1FvZ3JJ38Fn5pIsUNS0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 161597261,
+          "mode": "list",
+          "cachedResultName": "requirment",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1u69YDgSunLNDJ6N6epDtftXN1FvZ3JJ38Fn5pIsUNS0/edit#gid=161597261"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Job Title",
+              "lookupValue": "Mobile application developer"
+            }
+          ]
+        },
+        "combineFilters": "OR",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -208,
+        176
+      ],
+      "id": "9a3d631d-dff6-4fa8-8d23-fe49977de50d",
+      "name": "Get row(s) in sheet",
+      "executeOnce": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AjGvuMxyD27wvE9S",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1u69YDgSunLNDJ6N6epDtftXN1FvZ3JJ38Fn5pIsUNS0",
+          "mode": "list",
+          "cachedResultName": "Hackaton CV",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1u69YDgSunLNDJ6N6epDtftXN1FvZ3JJ38Fn5pIsUNS0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1546818499,
+          "mode": "list",
+          "cachedResultName": "Form Responses 4",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1u69YDgSunLNDJ6N6epDtftXN1FvZ3JJ38Fn5pIsUNS0/edit#gid=1546818499"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -864,
+        -304
+      ],
+      "id": "82592b20-85cd-4f08-bd69-665ce5540af3",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "H5WRmoLMoswfdxiY",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6244f6ff-edcf-4589-84e0-a4a75b33a1cd",
+              "leftValue": "={{ $('Parse JSON Output').item.json.score }}",
+              "rightValue": 75,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        1152,
+        32
+      ],
+      "id": "ce744190-00ec-4fa5-8ba5-09aa8dec1a5a",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Append or update in final sheet').item.json.Email }}",
+        "subject": "Call for Interview ",
+        "emailType": "text",
+        "message": "=dear  {{ $('Append or update in final sheet').item.json['Candidate Name'] }};\nyouo are called for interview so kindly came on time ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1360,
+        -176
+      ],
+      "id": "dc822c1d-8653-4223-8951-3d56246b347e",
+      "name": "Send a message",
+      "webhookId": "4b487d8d-0551-4b18-a8cb-89d15af87944",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "mGlxeWTcJMUUkR9P",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// This tells n8n to process every single item (candidate) in the list\nreturn $input.all().map(item => {\n  try {\n    // We parse the AI output for each specific candidate\n    const parsedOutput = JSON.parse(item.json.output);\n    \n    // We return the new parsed data while keeping the original info (like Name/Email)\n    return {\n      json: {\n        ...item.json,\n        ...parsedOutput\n      }\n    };\n  } catch (error) {\n    // If the AI output isn't valid JSON, we return the item with an error message\n    return {\n      json: {\n        ...item.json,\n        error: \"AI output was not valid JSON\",\n        raw_output: item.json.output\n      }\n    };\n  }\n});"
+      },
+      "id": "cb7afc43-e0ed-4794-bc5b-cbe55d675a04",
+      "name": "Parse JSON Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        -80
+      ],
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1u69YDgSunLNDJ6N6epDtftXN1FvZ3JJ38Fn5pIsUNS0",
+          "mode": "list",
+          "cachedResultName": "Hackaton CV",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1u69YDgSunLNDJ6N6epDtftXN1FvZ3JJ38Fn5pIsUNS0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "canidate info from google form",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1u69YDgSunLNDJ6N6epDtftXN1FvZ3JJ38Fn5pIsUNS0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Anonymized ID": "={{ $('Parse JSON Output').item.json.anonymized_id }}",
+            "Candidate Name": "={{ $('Google Sheets Trigger').item.json.Name }}",
+            "Email": "={{ $('Google Sheets Trigger').item.json['Email '] }}",
+            "Key Skills ": "={{ $('Parse JSON Output').item.json.skills_found }}",
+            "CV Link": "={{ $('Google Sheets Trigger').item.json.CV }}",
+            "missing gaps": "={{ $('Parse JSON Output').item.json.missing_gaps }}",
+            "Ai Feedback": "={{ $('Parse JSON Output').item.json.rationale }}",
+            "Date": "={{ $('Google Sheets Trigger').item.json.Timestamp }}",
+            "Technical Score": "={{ $('Parse JSON Output').item.json.score }}"
+          },
+          "matchingColumns": [
+            "Anonymized ID"
+          ],
+          "schema": [
+            {
+              "id": "Anonymized ID",
+              "displayName": "Anonymized ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Candidate Name",
+              "displayName": "Candidate Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Technical Score",
+              "displayName": "Technical Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Key Skills ",
+              "displayName": "Key Skills ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Ai Feedback",
+              "displayName": "Ai Feedback",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "CV Link",
+              "displayName": "CV Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "missing gaps",
+              "displayName": "missing gaps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        704,
+        -144
+      ],
+      "id": "c2a6cb4f-2697-4c10-823b-e446dd43697b",
+      "name": "Append or update in final sheet",
+      "executeOnce": false,
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AjGvuMxyD27wvE9S",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse JSON Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse JSON Output": {
+      "main": [
+        [
+          {
+            "node": "Append or update in final sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update in final sheet": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "ebad2077-295a-4fed-8ee4-f18374d97bb7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5b1e15ef1283d4e79553b50845b58861314852763db37e402c8eaa6287808aae"
+  },
+  "id": "7DL6btKQGki2IjW2",
+  "tags": []
+}
